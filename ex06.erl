@@ -1,6 +1,9 @@
 -module(ex06).
 -compile(export_all).
 
+% c(ex06).
+% ex06:init_chat().
+% ex06:init_chat2('frodo@pixelbuntu').
 
 %% makes process of the msg fxn, passing its own PID and assigns it to "chat" 
 start() ->
