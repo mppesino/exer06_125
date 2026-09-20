@@ -3,15 +3,17 @@
 
 %% makes process of the msg fxn, passing 0 args and assigns it to "chat" 
 start() ->
-	register(chat, spawn(ex06, msg, [])).
+	PID = self(),
+	register(chat, spawn(ex06, msg, [PID])).
 
 %% simple listener that returns a message
-msg() ->
+msg(PID) ->
 	receive
-		{sys, Text} -> io:format("*** ~s ***~n", [Text]), msg();
-		{Name, Message} -> io:format("~s: ~s~n", [Name, Message]), msg();
-		bye -> io:format("You have disconnected.~n"), disconnect(nodes());
-		_ -> io:format("Unrecognized Message~n"), msg()
+		{sys, Text} -> io:format("*** ~s ***~n", [Text]), msg(PID);
+		{sys2, Text} -> io:format("*** ~s ***~n", [Text]), disconnect(nodes()), exit(PID, exit);
+		{Name, Message} -> io:format("~s: ~s~n", [Name, Message]), msg(PID);
+		bye -> io:format("You have disconnected.~n"),disconnect(nodes());
+		_ -> io:format("Unrecognized Message~n"), msg(PID)
 	end.	
 
 %% use on terminal where you'll be connecting to
@@ -49,8 +51,13 @@ chat_room(Name) ->
     Trimmed = string:trim(Message),
     case Trimmed of
         "bye" ->
-            chat ! bye,
-            send_chat(nodes(), {sys, Name ++ " has disconnected.~n"});
+        	chat ! bye,
+        	case length(nodes()) of
+        		1 ->
+            		send_chat(nodes(), {sys2, Name ++ " has disconnected"});
+	            _ -> 
+	        		send_chat(nodes(), {sys, Name ++ " has disconnected"})
+	        end;
         _ ->
             send_chat(nodes(), Name, Trimmed),
             chat_room(Name)
