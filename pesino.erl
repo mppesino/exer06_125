@@ -40,7 +40,7 @@ receiver() ->
 init_chat() ->
     net_kernel:monitor_nodes(true),
     Name = io:get_line("Enter Your Name: "),
-	register (chat, spawn(chat,receiver,[])),
+	register (pesino, spawn(pesino,receiver,[])),
     io:format("Waiting for Connection... ~n"),
     chat_room(Name, undefined).
 
@@ -49,14 +49,14 @@ init_chat2(Node) ->
     net_kernel:monitor_nodes(true),
     net_adm:ping(Node),
     Name = io:get_line("Enter Your Name: "),
-	register (chat, spawn(chat, receiver, [])),
+	register (pesino, spawn(pesino, receiver, [])),
     io:format("Established Connection to ~s ~n", [Node]),
     io:format("In Chat Room with ~s ~n", [Node]),
     chat_room(Name, Node).
 
-%% c(chat).
-%% chat:init_chat().
-%% chat:init_chat2('frodo@pixelbuntu').
+%% c(pesino).
+%% pesino:init_chat().
+%% pesino:init_chat2('frodo@pixelbuntu').
 
 chat_room(Name, undefined) ->
     case nodes() of
@@ -76,9 +76,9 @@ chat_room(Name, Node) ->
 
     case CleanMessage of
         "bye" ->
-            {chat, Node} ! bye,
+            {pesino, Node} ! bye,
             io:format("Ended Chat with ~s ~n", [Node]);
         _ ->
-            {chat, Node} ! {Name, CleanMessage},
+            {pesino, Node} ! {Name, CleanMessage},
             chat_room(Name, Node)
     end.
