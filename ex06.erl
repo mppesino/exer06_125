@@ -2,12 +2,13 @@
 -compile(export_all).
 
 
-%% makes process of the msg fxn, passing 0 args and assigns it to "chat" 
+%% makes process of the msg fxn, passing its own PID and assigns it to "chat" 
 start() ->
 	PID = self(),
 	register(chat, spawn(ex06, msg, [PID])).
 
 %% simple listener that returns a message
+%% Pass PID so we know what to kill when there are only 2 nodes left
 msg(PID) ->
 	receive
 		{sys, Text} -> io:format("*** ~s ***~n", [Text]), msg(PID);
@@ -35,6 +36,7 @@ init_chat2(FrodoNode) ->
 	Username2 = string:trim(User2),	
 	waiting(Username2).
 
+%% Waits for a node to connect before entering a chat room
 waiting(Name) ->
     case nodes() of
         [] ->
@@ -51,6 +53,8 @@ chat_room(Name) ->
     Message = io:get_line(Prompt),
     Trimmed = string:trim(Message),
     case Trimmed of
+	%% if there are only 2 nodes left, disconnect both by calling sys2, which calls exit(PID, chat_ended)
+	%% https://stackoverflow.com/questions/22548447/properly-exit-all-processes-erlang
         "bye" ->
         	case length(nodes()) of
         		1 ->
