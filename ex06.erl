@@ -1,6 +1,7 @@
 -module(ex06).
 -compile(export_all).
 
+
 %% makes process of the msg fxn, passing 0 args and assigns it to "chat" 
 start() ->
 	PID = self(),
@@ -10,7 +11,7 @@ start() ->
 msg(PID) ->
 	receive
 		{sys, Text} -> io:format("*** ~s ***~n", [Text]), msg(PID);
-		{sys2, Text} -> io:format("*** ~s ***~n", [Text]), disconnect(nodes()), exit(PID, exit);
+		{sys2, Text} -> io:format("*** ~s ***~n", [Text]), disconnect(nodes()), exit(PID, chat_ended);
 		{Name, Message} -> io:format("~s: ~s~n", [Name, Message]), msg(PID);
 		bye -> io:format("You have disconnected.~n"),disconnect(nodes());
 		_ -> io:format("Unrecognized Message~n"), msg(PID)
@@ -51,13 +52,14 @@ chat_room(Name) ->
     Trimmed = string:trim(Message),
     case Trimmed of
         "bye" ->
-        	chat ! bye,
         	case length(nodes()) of
         		1 ->
             		send_chat(nodes(), {sys2, Name ++ " has disconnected"});
 	            _ -> 
 	        		send_chat(nodes(), {sys, Name ++ " has disconnected"})
-	        end;
+	        end,
+			timer:sleep(100),
+			chat ! bye;
         _ ->
             send_chat(nodes(), Name, Trimmed),
             chat_room(Name)
