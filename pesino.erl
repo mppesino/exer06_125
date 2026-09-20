@@ -1,9 +1,8 @@
--module(chat).
+-module(pesino).
 -compile (export_all).
 
 start() ->
 	register (chat, spawn(chat,chat,[])).
-
 
 chat() ->
 	receive
